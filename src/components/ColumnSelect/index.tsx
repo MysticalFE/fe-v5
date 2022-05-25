@@ -1,6 +1,23 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useCallback } from 'react';
 import { Select, Space } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import { CaretDownOutlined } from '@ant-design/icons';
 import { RootState } from '@/store/common';
 import { getBusiGroups } from '@/services/common';
 import { CommonStoreState } from '@/store/commonInterface';
@@ -28,7 +45,7 @@ export default function ColumnSelect(props: Props) {
   return (
     <Space style={{ marginLeft: noLeftPadding ? 0 : 8, marginRight: noRightPadding ? 0 : 8 }}>
       {onClusterChange && (
-        <Select mode='multiple' allowClear style={{ minWidth: 80 }} placeholder='集群' onChange={onClusterChange}>
+        <Select mode='multiple' allowClear style={{ minWidth: 80 }} placeholder='集群' onChange={onClusterChange} getPopupContainer={() => document.body}>
           {clusters.map((k) => (
             <Select.Option value={k} key={k}>
               {k}
@@ -45,6 +62,7 @@ export default function ColumnSelect(props: Props) {
           dropdownClassName='overflow-586'
           filterOption={false}
           onSearch={handleSearch}
+          getPopupContainer={() => document.body}
           onFocus={() => {
             getBusiGroups('').then((res) => {
               setFilteredBusiGroups(res.dat || []);
@@ -65,14 +83,14 @@ export default function ColumnSelect(props: Props) {
         </Select>
       )}
       {onSeverityChange && (
-        <Select allowClear style={{ minWidth: 80 }} placeholder='事件级别' onChange={onSeverityChange}>
+        <Select suffixIcon={<CaretDownOutlined />} allowClear style={{ minWidth: 80 }} placeholder='事件级别' onChange={onSeverityChange} getPopupContainer={() => document.body}>
           <Select.Option value={1}>一级告警</Select.Option>
           <Select.Option value={2}>二级告警</Select.Option>
           <Select.Option value={3}>三级告警</Select.Option>
         </Select>
       )}
       {onEventTypeChange && (
-        <Select allowClear style={{ minWidth: 80 }} placeholder='事件类别' onChange={onEventTypeChange}>
+        <Select suffixIcon={<CaretDownOutlined />} allowClear style={{ minWidth: 80 }} placeholder='事件类别' onChange={onEventTypeChange} getPopupContainer={() => document.body}>
           <Select.Option value={0}>Triggered</Select.Option>
           <Select.Option value={1}>Recovered</Select.Option>
         </Select>

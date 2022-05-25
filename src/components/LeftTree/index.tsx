@@ -1,13 +1,31 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Badge, Checkbox, Col, Input, Radio, Row, Space } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/common';
 import { getBusiGroups } from '@/services/common';
 import { CommonStoreState } from '@/store/commonInterface';
+import _ from 'lodash';
 import './index.less';
 import { SearchOutlined, SettingOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router-dom';
 import { eventStoreState } from '@/store/eventInterface';
+import classNames from 'classnames';
 
 const CheckboxGroup = Checkbox.Group;
 type ChangeFunction = (value: any, item?: any) => void;
@@ -18,6 +36,7 @@ interface groupProps {
 }
 
 interface BusiGroupProps {
+  defaultSelect?: number | undefined;
   showNotGroupItem?: boolean;
   showAlertings?: boolean;
   onChange?: ChangeFunction;
@@ -55,52 +74,41 @@ interface SelectListProps {
 }
 
 // 内容可选列表
-export const SelectList: React.FC<SelectListProps> = ({ dataSource, fieldNames = {}, allowNotSelect = false, defaultSelect, showBadge = false, badgeInfo = {}, onChange }) => {
-  const [curSeletedKey, setCurSelectedKey] = useState<string | number>(
-    defaultSelect && typeof defaultSelect === 'object' ? defaultSelect[fieldNames.key || 'value'] : defaultSelect,
-  );
+export const SelectList: React.FC<SelectListProps> = ({ dataSource, fieldNames = {}, allowNotSelect = false, defaultSelect, showBadge = true, badgeInfo = {}, onChange }) => {
+  const [active, setActive] = useState<string | number>(defaultSelect && typeof defaultSelect === 'object' ? defaultSelect[fieldNames.key || 'value'] : defaultSelect);
 
   return (
     <div className='radio-list'>
-      <Radio.Group className='radio-list-group' value={curSeletedKey}>
-        <Space className='radio-list-group-space' direction='vertical'>
-          {dataSource.map((item) => {
-            const label = item[fieldNames.label || 'label'];
-            const key = item[fieldNames.key || 'value'];
-            const value = item[fieldNames.value || 'value'];
-            return (
-              <Row key={key}>
-                <Col span={showBadge ? 20 : 24}>
-                  <Radio
-                    className='radio-list-group-item'
-                    key={key}
-                    value={value}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (curSeletedKey !== value) {
-                        setCurSelectedKey(value);
-                        onChange && onChange(value, item);
-                      } else if (allowNotSelect) {
-                        setCurSelectedKey('');
-                        onChange && onChange('', {});
-                      }
-                    }}
-                  >
-                    <div style={{ wordBreak: 'break-all' }}>{label}</div>
-                  </Radio>
-                </Col>
-                {showBadge && (
-                  <Col span={4}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Badge count={badgeInfo[key] || 0} />
-                    </div>
-                  </Col>
-                )}
-              </Row>
-            );
-          })}
-        </Space>
-      </Radio.Group>
+      {dataSource.map((item: any) => {
+        return (
+          <Row key={item.id}>
+            <Col span={showBadge ? 20 : 24}>
+              <div
+                className={classNames({
+                  'n9e-metric-views-list-content-item': true,
+                  active: item.id == active,
+                })}
+                key={item.id}
+                onClick={(e) => {
+                  if (item.id !== active) {
+                    setActive(item.id);
+                    onChange && onChange(item.id, item);
+                  }
+                }}
+              >
+                <span className='name'>{item.name}</span>
+              </div>
+            </Col>
+            {showBadge && (
+              <Col span={4}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Badge count={badgeInfo[item.id] || 0} />
+                </div>
+              </Col>
+            )}
+          </Row>
+        );
+      })}
     </div>
   );
 };
@@ -190,8 +198,19 @@ const busiGroupContent = (busiGroupProps: BusiGroupProps): IGroupItemProps => {
       data: busiGroups[0],
     });
   }
+  if (busiGroupProps.defaultSelect && busiGroups.length > 0 && curBusiItem.id !== busiGroupProps.defaultSelect) {
+    const curBusiness = busiGroups.find((item) => item.id === busiGroupProps.defaultSelect);
+    if (curBusiness) {
+      localStorage.setItem('curBusiItem', JSON.stringify(curBusiness));
+      dispatch({
+        type: 'common/saveData',
+        prop: 'curBusiItem',
+        data: curBusiness,
+      });
+    }
+  }
   // 初始化选中项
-  const initCurBusiItem = useMemo(() => (curBusiItem.id ? curBusiItem : { id: undefined }), [curBusiItem]);
+  const initCurBusiItem = useMemo(() => (busiGroupProps.defaultSelect ? { id: busiGroupProps.defaultSelect } : curBusiItem.id ? curBusiItem : { id: undefined }), [curBusiItem]);
 
   // 初始化展示所有业务组
   useEffect(() => {

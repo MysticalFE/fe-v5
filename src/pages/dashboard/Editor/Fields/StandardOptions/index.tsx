@@ -1,6 +1,22 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React from 'react';
 import { Form, Select, InputNumber, Row, Col, Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, CaretDownOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import { Panel } from '../../Components/Collapse';
 
@@ -25,6 +41,7 @@ export default function index(props: IProps) {
                 overlayInnerStyle={{
                   width: 500,
                 }}
+                getTooltipContainer={() => document.body}
                 title={
                   <div>
                     <div>默认会做 SI Prefixes 处理，如不想默认的处理可选择 none 关闭</div>
@@ -41,7 +58,7 @@ export default function index(props: IProps) {
           }
           name={[...namePrefix, 'util']}
         >
-          <Select placeholder='auto' allowClear>
+          <Select suffixIcon={<CaretDownOutlined />} placeholder='auto' allowClear>
             <Option value='none'>none</Option>
             <OptGroup label='Data(SI)'>
               <Option value='bitsSI'>bits(SI)</Option>
@@ -56,10 +73,10 @@ export default function index(props: IProps) {
               <Option value='percentUnit'>百分比(0.0-1.0)</Option>
             </OptGroup>
             <OptGroup label='时间'>
-              <Option value='humantimeSeconds'>humanize(seconds)</Option>
-              <Option value='humantimeMilliseconds'>humanize(milliseconds)</Option>
               <Option value='seconds'>seconds</Option>
               <Option value='milliseconds'>milliseconds</Option>
+              <Option value='humantimeSeconds'>humanize(seconds)</Option>
+              <Option value='humantimeMilliseconds'>humanize(milliseconds)</Option>
             </OptGroup>
           </Select>
         </Form.Item>

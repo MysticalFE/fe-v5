@@ -1,12 +1,26 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Modal, Form, Input, Button, Space, Row, Col, Switch } from 'antd';
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, Button, Row, Col, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { DeleteOutlined, PlusOutlined, ArrowUpOutlined, ArrowDownOutlined, CopyOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import PromqlEditor from '@/components/PromqlEditor';
-import '../index.less';
+import { Range } from '@/components/DateRangePicker';
 import { Variable } from './definition';
 import { convertExpressionToQuery, replaceExpressionVars, stringToRegex } from './constant';
-import { Range } from '@/components/DateRangePicker';
 import { setVaraiableSelected } from './index';
 export interface FormType {
   var: Variable[];
@@ -77,7 +91,15 @@ export default function EditItem(props: Props) {
               {fields.map(({ key, name, fieldKey, ...restField }) => (
                 <Row gutter={[6, 6]} className='tag-content-item' key={key}>
                   <Col span={4}>
-                    <Form.Item {...restField} name={[name, 'name']} fieldKey={[fieldKey, 'name']} rules={[{ required: true, message: t('请输入变量名') }]}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'name']}
+                      fieldKey={[fieldKey, 'name']}
+                      rules={[
+                        { required: true, message: t('请输入变量名') },
+                        { pattern: /^[0-9a-zA-Z_]+$/, message: t('仅支持数字和字符下划线') },
+                      ]}
+                    >
                       <Input />
                     </Form.Item>
                   </Col>

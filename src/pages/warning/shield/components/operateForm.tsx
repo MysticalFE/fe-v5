@@ -1,6 +1,22 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Card, Select, Col, Button, Row, message, DatePicker, Tooltip } from 'antd';
-import { QuestionCircleFilled, PlusCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleFilled, PlusCircleOutlined, CaretDownOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 import TagItem from './tagItem';
@@ -54,7 +70,7 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
   const history = useHistory();
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
   const [timeLen, setTimeLen] = useState('1h');
-  const { curBusiItem } = useSelector<RootState, CommonStoreState>((state) => state.common);
+  const { curBusiItem, busiGroups } = useSelector<RootState, CommonStoreState>((state) => state.common);
 
   useEffect(() => {
     const btime = form.getFieldValue('btime');
@@ -64,6 +80,14 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
       const h = moment.duration(etime - btime).hours();
       const m = moment.duration(etime - btime).minutes();
       const s = moment.duration(etime - btime).seconds();
+    }
+    if (curBusiItem) {
+      form.setFieldsValue({ busiGroup: curBusiItem.id });
+    } else if (busiGroups.length > 0) {
+      form.setFieldsValue({ busiGroup: busiGroups[0].id });
+    } else {
+      message.warning('无可用业务组');
+      history.push('/alert-mutes');
     }
     return () => {};
   }, [form]);
@@ -111,7 +135,8 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
       etime: moment(values.etime).unix(),
       tags,
     };
-    addShield(params, curBusiItem.id)
+    const curBusiItemId = form.getFieldValue('busiGroup');
+    addShield(params, curBusiItemId)
       .then((_) => {
         message.success(t('新建告警屏蔽成功'));
         history.push('/alert-mutes');
@@ -164,6 +189,16 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
       }}
     >
       <Card>
+        <Form.Item label={t('业务组：')} name='busiGroup'>
+          <Select suffixIcon={<CaretDownOutlined />}>
+            {busiGroups?.map((item) => (
+              <Option value={item.id} key={item.id}>
+                {item.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
         <Form.Item
           label={t('生效集群：')}
           name='cluster'
@@ -174,7 +209,7 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
             },
           ]}
         >
-          <Select>
+          <Select suffixIcon={<CaretDownOutlined />}>
             {clusterList?.map((item) => (
               <Option value={item} key={item}>
                 {item}
@@ -191,7 +226,7 @@ const OperateForm: React.FC<Props> = ({ detail = {}, type, tagsObj = {} }) => {
           </Col>
           <Col span={8}>
             <Form.Item label={t('屏蔽时长：')}>
-              <Select placeholder={t('请选择屏蔽时长')} onChange={timeLenChange} value={timeLen}>
+              <Select suffixIcon={<CaretDownOutlined />} placeholder={t('请选择屏蔽时长')} onChange={timeLenChange} value={timeLen}>
                 {timeLensDefault.map((item: any, index: number) => (
                   <Option key={index} value={item.value}>
                     {item.value}

@@ -1,12 +1,29 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import { Range } from '@/components/DateRangePicker';
 export interface IGridPos {
   h: number;
   w: number;
   x: number;
   y: number;
+  i: string;
 }
 
-// query interface 
+// query interface
 export interface ITarget {
   refId: string;
   expr: string; // promQL
@@ -15,19 +32,19 @@ export interface ITarget {
   step?: number; // 固定时间间隔
 }
 
-export type IType = 'timeseries' | 'stat' | 'table' | 'pie';
+export type IType = 'row' | 'timeseries' | 'stat' | 'table' | 'pie' | 'hexbin';
 
 export interface IValueMapping {
   match: {
     special?: string | number;
     from?: number;
-    to?: number
+    to?: number;
   };
   result: {
     color: string;
     text: string;
   };
-  type: 'range' | 'special'
+  type: 'range' | 'special' | 'specialValue'; // TODO: 历史原因 special 是固定值，specialValue 是特殊值
 }
 
 export interface IThresholds {
@@ -48,14 +65,15 @@ export interface IOptions {
     max?: number;
     decimals?: number;
   };
-  legend?: { // TODO: 目前不支持这么复杂的自定义
+  legend?: {
+    // TODO: 目前不支持这么复杂的自定义
     calcs: string[];
     displayMode: 'list' | 'hidden';
-    placement: 'right' | 'bottom'
+    placement: 'right' | 'bottom';
   };
   tooltip?: {
-    mode: 'single' | 'all',
-    sort: 'none' | 'asc' | 'desc'
+    mode: 'single' | 'all';
+    sort: 'none' | 'asc' | 'desc';
   };
 }
 
@@ -63,10 +81,10 @@ export interface IOverride {
   matcher: {
     type: 'byName'; // 目前只支持 byName
     value: string;
-  },
+  };
   properties: {
     [key: string]: any; // standardOptions | valueMappings
-  }
+  };
 }
 
 export interface ILink {
@@ -77,7 +95,7 @@ export interface ILink {
 
 export interface ITimeseriesStyles {
   version: string; // 时序图组件使用的版本
-  drawStyle: 'lines' |'bars';
+  drawStyle: 'lines' | 'bars';
   lineInterpolation: 'linear' | 'smooth';
   fillOpacity: number;
   stack: 'off' | 'noraml'; // off 关闭；normal 开启，此结构未后期其他模式预留
@@ -85,7 +103,7 @@ export interface ITimeseriesStyles {
 
 export interface IStatStyles {
   version: string; // 时序图组件使用的版本
-  textMode: 'valueAndName' |'value';
+  textMode: 'valueAndName' | 'value';
   textSize: {
     title: number;
     value: number;
@@ -104,9 +122,18 @@ export interface ITableStyles {
   aggrDimension: string;
 }
 
+export interface IHexbinStyles {
+  version: string; // 时序图组件使用的版本
+  calc: string;
+  colorRange: string[]; // 三个颜色值
+  colorDomainAuto: boolean;
+  colorDomain: number[]; // 自定义 [min, max]
+  reverseColorOrder: boolean;
+}
+
 export interface IPanel {
   version: string; // 单个图表面板使用的版本
-  id: number;
+  id: string;
   name: string;
   links?: ILink[];
   description: string;
@@ -116,6 +143,8 @@ export interface IPanel {
   options: IOptions;
   custom: any; // 图表
   overrides: IOverride[];
+  collapsed?: boolean; // 用于 row 展开收起控制是否显示
+  panels?: IPanel[]; // 用于 row 收起时保存子面板
 }
 
 export interface IDashboard {

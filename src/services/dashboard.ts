@@ -1,23 +1,22 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import request from '@/utils/request';
 import { RequestMethod } from '@/store/common';
 import { N9EAPI } from '../../config/constant';
-import { ISearchTagKeyParams, ISearchTagValueParams } from '@/components/FormComponents/MultipleDynamicSelect/definition';
-
-// 查询tagkey
-export const getTagKey = function (data: ISearchTagKeyParams) {
-  return request(`/api/n9e/tag-keys`, {
-    method: RequestMethod.Post,
-    data,
-  });
-};
-
-// 查询tag value
-export const getTagValue = function (data: ISearchTagValueParams) {
-  return request(`/api/n9e/tag-values`, {
-    method: RequestMethod.Post,
-    data,
-  });
-};
 
 interface DashboardQuery {}
 // 大盘列表
@@ -70,7 +69,7 @@ export const importDashboard = function (busiId: number, data: any[]) {
   });
 };
 
-// 创建大盘
+// 获取大盘详情
 export const getSingleDashboard = function (busiId: string, id: string | number) {
   return request(`/api/n9e/busi-group/${busiId}/dashboard/${id}`, {
     method: RequestMethod.Get,
@@ -232,5 +231,26 @@ export const getQueryResult = function (data) {
   return request(`/api/n9e/prometheus/api/v1/query`, {
     method: RequestMethod.Get,
     params: { ...data },
+  });
+};
+
+export const getBuiltinDashboards = function () {
+  return request('/api/n9e/dashboards/builtin/list', {
+    method: RequestMethod.Get,
+  });
+};
+
+export const createBuiltinDashboards = function (name: string, cluster: string, id: number) {
+  return request(`/api/n9e/busi-group/${id}/dashboards/builtin`, {
+    method: RequestMethod.Post,
+    data: { name, cluster },
+  });
+};
+
+// boards v2 api
+export const migrateDashboard = function (id: number, data: { name: string; tags: string; configs: string }) {
+  return request(`/api/n9e/dashboard/${id}/migrate`, {
+    method: RequestMethod.Put,
+    data,
   });
 };

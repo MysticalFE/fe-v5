@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import { defineConfig } from 'vite';
 import { dependencies } from './package.json';
 import reactRefresh from '@vitejs/plugin-react-refresh';
@@ -45,18 +61,6 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@/store/eventWallInterface',
-        replacement: '/src/Packages/EventWall/interface',
-      },
-      {
-        find: '@/services/outfire',
-        replacement: '/src/Packages/Outfire/services/outfire',
-      },
-      {
-        find: '@/pages/outfire',
-        replacement: '/src/Packages/Outfire/pages',
-      },
-      {
         find: '@',
         replacement: '/src',
       },
@@ -65,54 +69,28 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // 字符串简写写法
-      // '/foo': 'http://localhost:4567/foo',
-      // 选项写法
-      // '/api': {
-      //   target: 'http://10.86.76.13:8085',
-      //   changeOrigin: true,
-      // },
       '/api/n9e': {
         target: serverIp,
         // target: 'http://10.206.0.16:18000/',
+        // target: 'http://10.206.0.7:18000/',
         changeOrigin: true,
       },
-      '/filters': {
-        target: serverIp,
+      '/api/v1/': {
+        // target: 'http://10.206.0.17:9012',
+        target: 'http://10.129.0.11:9999',
         changeOrigin: true,
       },
-      '/integrations': {
-        target: serverIp,
+      '/api/fc-brain': {
+        target: 'http://10.206.0.11:8765/',
         changeOrigin: true,
       },
-      '/alerts': {
-        target: serverIp,
-        changeOrigin: true,
-      },
-      '/changes': {
-        target: serverIp,
-        changeOrigin: true,
-      },
-      '/dimension/api/v1': {
-        target: 'http://10.166.53.215:8089',
-        changeOrigin: true,
-      },
-      '/v1/api/fireplate': {
-        target: 'http://172.20.70.60:8010',
-        changeOrigin: true,
-      },
-      // 正则表达式写法
-      // '^/fallback/.*': {
-      //   target: 'http://jsonplaceholder.typicode.com',
-      //   changeOrigin: true,
-      //   rewrite: (path) => path.replace(/^\/fallback/, '')
-      // }
     },
   },
   build: {
     target: 'chrome58',
     outDir: 'pub',
     chunkSizeWarningLimit: 650,
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -130,6 +108,8 @@ export default defineConfig({
         additionalData: `@import "/src/global.variable.less";`,
         javascriptEnabled: true,
         modifyVars: {
+          // modify-start
+          'primary-color': '#1890ff',
           'font-size-base': '12px',
           'color-base': '#333',
           'form-item-margin-bottom': '18px',
@@ -137,6 +117,7 @@ export default defineConfig({
           'text-color': '#333',
           'menu-dark-bg': '#2C3D5E',
           'menu-dark-inline-submenu-bg': '#2C3D5E',
+          // modify-end
         },
       },
     },

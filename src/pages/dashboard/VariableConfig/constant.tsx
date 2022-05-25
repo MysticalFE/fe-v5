@@ -1,6 +1,22 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+import React, { createContext } from 'react';
 import { resourceGroupItem } from '@/store/businessInterface';
 import { favoriteFrom } from '@/store/common';
-import React, { createContext } from 'react';
 import { getLabelNames, getMetricSeries, getLabelValues, getMetric, getQueryResult } from '@/services/dashboard';
 import { Range, formatPickerDate } from '@/components/DateRangePicker';
 import { FormType } from './EditItem';
@@ -141,14 +157,10 @@ export const convertExpressionToQuery = (expression: string, range: Range) => {
     return getLabelNames({ start, end }).then((res) => res.data);
   } else if (expression.startsWith('label_values(')) {
     if (expression.includes(',')) {
-      let i, metric, label;
-      const res = expression.match(/\((.+), (.+?)\)/);
-      if (res && res.length > 2) {
-        [i, metric, label] = res;
-      } else {
-        [metric, label] = expression.substring('label_values('.length, expression.length - 1).split(',');
-      }
-      return getMetricSeries({ 'match[]': metric.trim(), start, end }).then((res) => Array.from(new Set(res.data.map((item) => item[label.trim()]))));
+      let metricsAndLabel = expression.substring('label_values('.length, expression.length - 1).split(',');
+      const label = metricsAndLabel.pop();
+      const metric = metricsAndLabel.join(', ');
+      return getMetricSeries({ 'match[]': metric.trim(), start, end }).then((res) => Array.from(new Set(res.data.map((item) => item[label!.trim()]))));
     } else {
       const label = expression.substring('label_values('.length, expression.length - 1);
       return getLabelValues(label, { start, end }).then((res) => res.data);
@@ -172,9 +184,17 @@ export const convertExpressionToQuery = (expression: string, range: Range) => {
   return Promise.resolve(expression.length > 0 ? expression.split(',').map((i) => i.trim()) : '');
 };
 
+const replaceAllPolyfill = (str, substr, newSubstr): string => {
+  let result = str;
+  while (result.includes(substr)) {
+    result = result.replace(substr, newSubstr);
+  }
+  return result;
+};
+
 export const replaceExpressionVars = (expression: string, formData: FormType, limit: number, id: string) => {
   var newExpression = expression;
-  const vars = newExpression.match(/\$[0-9a-zA-Z\._\-]+/g);
+  const vars = newExpression.match(/\$[0-9a-zA-Z_]+/g);
   if (vars && vars.length > 0) {
     for (let i = 0; i < limit; i++) {
       const { name, options, reg } = formData.var[i];
@@ -183,15 +203,16 @@ export const replaceExpressionVars = (expression: string, formData: FormType, li
       if (vars.includes('$' + name) && selected) {
         if (Array.isArray(selected)) {
           if (selected.includes('all') && options) {
-            newExpression = newExpression.replaceAll(
+            newExpression = replaceAllPolyfill(
+              newExpression,
               '$' + name,
               `(${(options as string[]).filter((i) => !reg || !stringToRegex(reg) || (stringToRegex(reg) as RegExp).test(i)).join('|')})`,
             );
           } else {
-            newExpression = newExpression.replaceAll('$' + name, `(${(selected as string[]).join('|')})`);
+            newExpression = replaceAllPolyfill(newExpression, '$' + name, `(${(selected as string[]).join('|')})`);
           }
         } else if (typeof selected === 'string') {
-          newExpression = newExpression.replaceAll('$' + name, selected as string);
+          newExpression = replaceAllPolyfill(newExpression, '$' + name, selected as string);
         }
       }
     }

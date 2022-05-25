@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { Popover, Button, DatePicker } from 'antd';
 import { CaretDownOutlined, CloseCircleFilled } from '@ant-design/icons';
@@ -87,7 +103,7 @@ export default function DateRangePicker(props: Props) {
   useEffect(() => {
     if (!value) {
       if (!nullable) {
-        const defaultSelect = 3;
+        const defaultSelect = localStorage.getItem('relativeDateIndex') ? Number(localStorage.getItem('relativeDateIndex')) : 3;
         setLeftSelect(defaultSelect);
         emitValue(leftList[defaultSelect]);
       }
@@ -147,6 +163,7 @@ export default function DateRangePicker(props: Props) {
   const handleRightOk = () => {
     setVisible(false);
     setLeftSelect(-1);
+    localStorage.setItem('relativeDateIndex', '');
     emitValue({
       start: unit === 's' ? startTime.unix() : startTime.valueOf(),
       end: unit === 's' ? endTime.unix() : endTime.valueOf(),
@@ -155,6 +172,7 @@ export default function DateRangePicker(props: Props) {
 
   const handleLeftClick = (i) => {
     setLeftSelect(i);
+    localStorage.setItem('relativeDateIndex', i);
     emitValue(leftList[i]);
     setVisible(false);
   };

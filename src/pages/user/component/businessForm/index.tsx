@@ -1,7 +1,23 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useEffect, useState, useImperativeHandle, ReactNode, useCallback } from 'react';
 import { Form, Input, Select, Switch, Row, Tag, Space, Button } from 'antd';
 import { layout } from '../../const';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined, CaretDownOutlined } from '@ant-design/icons';
 import { getBusinessTeamInfo, getTeamInfoList } from '@/services/manage';
 import { TeamProps, Team, TeamInfo, ActionType } from '@/store/manageInterface';
 import { useTranslation } from 'react-i18next';
@@ -139,7 +155,14 @@ const TeamForm = React.forwardRef<ReactNode, TeamProps>((props, ref) => {
                       fieldKey={[fieldKey, 'user_group_id']}
                       rules={[{ required: true, message: t('业务组团队不能为空！') }]}
                     >
-                      <Select style={{ width: '100%' }} filterOption={false} onSearch={(e) => debounceFetcher(e)} showSearch onBlur={() => getList('')}>
+                      <Select
+                        suffixIcon={<CaretDownOutlined />}
+                        style={{ width: '100%' }}
+                        filterOption={false}
+                        onSearch={(e) => debounceFetcher(e)}
+                        showSearch
+                        onBlur={() => getList('')}
+                      >
                         {userTeam.map((team) => (
                           <Option key={team.id} value={team.id}>
                             {team.name}

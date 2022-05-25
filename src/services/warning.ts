@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import request from '@/utils/request';
 import { RequestMethod, IBasePagingParams } from '@/store/common';
 import type { MetricListRes, strategyGroup, strategyStatus, TagKeysRes, TagValuesRes } from '@/store/warningInterface';
@@ -287,5 +303,74 @@ export const updateAlertEventsAppendTags = function (ids: Array<number>, append_
       ids,
       append_tags,
     },
+  });
+};
+
+export const getBuiltinAlerts = function () {
+  return request('/api/n9e/alert-rules/builtin/list', {
+    method: RequestMethod.Get,
+  });
+};
+
+export const createBuiltinAlerts = function (name: string, cluster: string, id: number) {
+  return request(`/api/n9e/busi-group/${id}/alert-rules/builtin`, {
+    method: RequestMethod.Post,
+    data: { name, cluster },
+  });
+};
+
+export const getAggrAlerts = function () {
+  return request('/api/n9e/alert-aggr-views', {
+    method: RequestMethod.Get,
+  });
+};
+
+export const AddAggrAlerts = function (data) {
+  return request('/api/n9e/alert-aggr-views', {
+    method: RequestMethod.Post,
+    data,
+  });
+};
+
+export const updateAggrAlerts = function (data) {
+  return request('/api/n9e/alert-aggr-views', {
+    method: RequestMethod.Put,
+    data,
+  });
+};
+
+export const deleteAggrAlerts = function (ids: number[]) {
+  return request('/api/n9e/alert-aggr-views', {
+    method: RequestMethod.Delete,
+    data: { ids },
+  });
+};
+
+export const getAlertCards = function (params) {
+  return request('/api/n9e/alert-cur-events/card', {
+    method: RequestMethod.Get,
+    params,
+  });
+};
+
+export const getCardDetail = function (ids) {
+  return request('/api/n9e/alert-cur-events/card/details', {
+    method: RequestMethod.Post,
+    data: { ids },
+  });
+};
+
+export const getBrainData = function (params) {
+  return request('/api/fc-brain/data', {
+    method: RequestMethod.Get,
+    params,
+  });
+};
+
+export const getBrainParams = function () {
+  return request('/api/fc-brain/params', {
+    method: RequestMethod.Get,
+  }).then((res) => {
+    return res.data;
   });
 };

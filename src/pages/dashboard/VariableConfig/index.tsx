@@ -1,15 +1,28 @@
-import React, { useImperativeHandle, useMemo, useReducer, useState } from 'react';
-import { Row, Col } from 'antd';
-import DisplayItem from './DisplayItem';
-import EditItem, { FormType } from './EditItem';
-import { Button } from 'antd';
-import { ADD_ITEM, CLASS_PATH_VALUE, CLASS_PATH_PREFIX_VALUE, INIT_DATA, TagFilterReducer, TagFilterStore } from './constant';
-import { EditOutlined, PlusOutlined } from '@ant-design/icons';
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+import React, { useState, useEffect } from 'react';
+import { EditOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
-import { useEffect } from 'react';
-import './index.less';
+import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Range } from '@/components/DateRangePicker';
+import DisplayItem from './DisplayItem';
+import EditItem, { FormType } from './EditItem';
+import './index.less';
 export type VariableType = FormType;
 
 interface ITagFilterProps {
@@ -19,7 +32,8 @@ interface ITagFilterProps {
   editable?: boolean;
   value?: FormType;
   range: Range;
-  onChange: (data: FormType, needSave: boolean) => void;
+  onChange: (data: FormType, needSave: boolean, options?: FormType) => void;
+  onOpenFire?: () => void;
 }
 
 export function setVaraiableSelected(name: string, value: string | string[], id: string) {
@@ -32,7 +46,7 @@ export function getVaraiableSelected(name: string, id: string) {
   return v ? JSON.parse(v) : null;
 }
 
-const TagFilter: React.ForwardRefRenderFunction<any, ITagFilterProps> = ({ isOpen = false, value, onChange, editable = true, cluster, range, id }, ref) => {
+const TagFilter: React.ForwardRefRenderFunction<any, ITagFilterProps> = ({ isOpen = false, value, onChange, editable = true, cluster, range, id, onOpenFire }, ref) => {
   const { t } = useTranslation();
   const [editing, setEditing] = useState<boolean>(isOpen);
   const [varsMap, setVarsMap] = useState<{ string?: string | string[] | undefined }>({});
@@ -50,13 +64,13 @@ const TagFilter: React.ForwardRefRenderFunction<any, ITagFilterProps> = ({ isOpe
   }, [value]);
 
   const handleVariableChange = (index: number, v: string | string[], options) => {
-    const newData = data ? { var: [...data.var] } : { var: [] };
-    // newData.var[index].selected = v;
+    const newData = data ? { var: _.cloneDeep(data.var) } : { var: [] };
+    const newDataWithOptions = data ? { var: _.cloneDeep(data.var) } : { var: [] };
     setVaraiableSelected(newData.var[index].name, v, id);
     setVarsMap((varsMap) => ({ ...varsMap, [`$${newData.var[index].name}`]: v }));
-    // options && (newData.var[index].options = options);
+    options && (newDataWithOptions.var[index].options = options);
     setData(newData);
-    onChange(newData, false);
+    onChange(newData, false, newDataWithOptions);
   };
 
   return (
@@ -77,11 +91,25 @@ const TagFilter: React.ForwardRefRenderFunction<any, ITagFilterProps> = ({ isOpe
                 varsMap={varsMap}
               ></DisplayItem>
             ))}
-            {editable && <EditOutlined className='icon' onClick={() => setEditing(true)}></EditOutlined>}
+            {editable && (
+              <EditOutlined
+                className='icon'
+                onClick={() => {
+                  setEditing(true);
+                  onOpenFire && onOpenFire();
+                }}
+              ></EditOutlined>
+            )}
           </>
         )}
-        {(data ? data?.var.length === 0 : true) && editable && (
-          <div className='add-variable-tips' onClick={() => setEditing(true)}>
+        {(data ? data?.var?.length === 0 : true) && editable && (
+          <div
+            className='add-variable-tips'
+            onClick={() => {
+              setEditing(true);
+              onOpenFire && onOpenFire();
+            }}
+          >
             {t('添加大盘变量')}
           </div>
         )}

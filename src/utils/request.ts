@@ -6,12 +6,19 @@ import { UpdateAccessToken } from '@/services/login';
 /** 异常处理程序，所有的error都被这里处理，页面无法感知具体error */
 const errorHandler = (error: Error): Response => {
   // 忽略 AbortError 类型的报错
-  if (!(error.name === 'AbortError')) {
+  // @ts-ignore
+  if (!(error.name === 'AbortError') && !error.silence) {
     notification.error({
       message: error.message,
     });
   }
-  throw new Error(error.message);
+  // @ts-ignore
+  if (error.silence) {
+    // TODO: 兼容 n9e，暂时认定只有开启 silence 的场景才需要传递 error 详情
+    throw error;
+  } else {
+    throw new Error(error.message);
+  }
 };
 
 /** 配置request请求时的默认参数 */
@@ -39,7 +46,7 @@ request.interceptors.request.use((url, options) => {
  * 响应拦截
  */
 request.interceptors.response.use(
-  async (response) => {
+  async (response, options) => {
     const { status } = response;
 
     if (status === 200) {
@@ -47,37 +54,77 @@ request.interceptors.response.use(
         .clone()
         .json()
         .then((data) => {
-          if (data.err === '' || data.status === 'success') {
-            if (data.data || data.dat) {
-              if (data.dat && Object.prototype.toString.call(data.dat.list) === '[object Null]') {
-                data.dat.list = [];
-              }
+          if (response.url.includes('/api/v1/')) {
+            if (status === 200 && !data.error) {
+              return { ...data, success: true };
+            } else if (data.error) {
+              // @ts-ignore
+              throw new Error(data.error.message, { cause: options.silence });
             }
-            return { ...data, success: true };
           } else {
-            throw new Error(data.err);
+            if (data.err === '' || data.status === 'success' || data.error === '') {
+              if (data.data || data.dat) {
+                if (data.dat && Object.prototype.toString.call(data.dat.list) === '[object Null]') {
+                  data.dat.list = [];
+                }
+              }
+              return { ...data, success: true };
+            } else {
+              throw new Error(data.err);
+            }
+          }
+        });
+    }
+    // 兼容异常处理
+    if (status === 500 && response.url.includes('/api/v1')) {
+      return response
+        .clone()
+        .json()
+        .then((data) => {
+          if (!data.error) {
+            return { ...data, success: true };
+            // if (data.data || data.dat) {
+            //   return { ...data, success: true };
+            // } else {
+            //   return { success: true };
+            // }
+          } else if (data.error) {
+            throw {
+              name: data.error.name,
+              message: data.error.message,
+              silence: options.silence,
+              data,
+              response,
+            };
           }
         });
     }
     if (status === 401) {
       if (response.url.indexOf('/api/n9e/auth/refresh') > 0) {
-        location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname : ''}`;
+        location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname + location.search : ''}`;
       } else {
         localStorage.getItem('refresh_token')
           ? UpdateAccessToken().then((res) => {
               console.log('401 err', res);
               if (res.err) {
-                location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname : ''}`;
+                location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname + location.search : ''}`;
               } else {
                 const { access_token, refresh_token } = res.dat;
                 localStorage.setItem('access_token', access_token);
                 localStorage.setItem('refresh_token', refresh_token);
               }
             })
-          : (location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname : ''}`);
+          : (location.href = `/login${location.pathname != '/' ? '?redirect=' + location.pathname + location.search : ''}`);
       }
     } else if (status === 404) {
       location.href = '/404';
+    } else if (status === 403 && response.url.includes('/api/v1')) {
+      return response
+        .clone()
+        .json()
+        .then((data) => {
+          if (data.error && data.error.message) throw new Error(data.error.message);
+        });
     } else {
       const contentType = response.headers.get('content-type');
       const isPlainText = contentType?.indexOf('text/plain; charset=utf-8') !== -1;
@@ -93,10 +140,24 @@ request.interceptors.response.use(
           .clone()
           .json()
           .then((data) => {
-            if (response.url.indexOf('/api/n9e/prometheus/api/v1') > -1) {
-              return data;
+            // 兼容 n9e 中的 prometheus api
+            if (options.silence === undefined) {
+              if (response.url.indexOf('/api/n9e/prometheus/api/v1') > -1 || response.url.indexOf('/api/v1/datasource/prometheus') > -1) {
+                return data;
+              }
             }
-            throw new Error(data.err ? data.err : data);
+            if (response.url.includes('/api/v1')) {
+              throw {
+                // TODO: 后端服务异常后可能返回的错误数据也不是一个正常的结构，后面得考虑下怎么处理
+                name: data.error ? data.error.name : JSON.stringify(data),
+                message: data.error ? data.error.message : JSON.stringify(data),
+                silence: options.silence,
+                data,
+                response,
+              };
+            } else {
+              throw new Error(data.err ? data.err : data);
+            }
           });
       }
     }

@@ -1,19 +1,38 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useHistory, useParams, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { CaretDownOutlined } from '@ant-design/icons';
+import { debounce } from 'lodash';
 import moment from 'moment';
 import { Card, Form, Input, InputNumber, Radio, Select, Row, Col, Button, TimePicker, Checkbox, Modal, message, Space, Switch, Tooltip, Tag, notification } from 'antd';
-const { TextArea } = Input;
-const { Option } = Select;
 import { QuestionCircleFilled, MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { RootState } from '@/store/common';
 import { CommonStoreState } from '@/store/commonInterface';
 import { getTeamInfoList, getNotifiesList } from '@/services/manage';
 import { addOrEditStrategy, EditStrategy, prometheusQuery, deleteStrategy } from '@/services/warning';
-import PromqlEditor from '@/components/PromqlEditor';
+import PromQLInput from '@/components/PromQLInput';
+import AdvancedWrap from '@/components/AdvancedWrap';
 import { SwitchWithLabel } from './SwitchWithLabel';
-import { debounce } from 'lodash';
+import AbnormalDetection from './AbnormalDetection';
+
+const { Option } = Select;
 const layout = {
   labelCol: {
     span: 3,
@@ -271,7 +290,7 @@ const operateForm: React.FC<Props> = ({ type, detail = {} }) => {
                 },
               ]}
             >
-              <Select>
+              <Select suffixIcon={<CaretDownOutlined />}>
                 {clusterList?.map((item) => (
                   <Option value={item} key={item}>
                     {item}
@@ -279,23 +298,16 @@ const operateForm: React.FC<Props> = ({ type, detail = {} }) => {
                 ))}
               </Select>
             </Form.Item>
-
+            <AdvancedWrap>
+              <AbnormalDetection form={form} />
+            </AdvancedWrap>
             <Form.Item label='PromQL' className={'Promeql-content'} required>
-              <Form.Item
-                name='prom_ql'
-                // labelCol={{ span: 3 }}
-                // wrapperCol={{ span: 23 }}
-                validateTrigger={['onBlur']}
-                trigger='onChange'
-                rules={[{ required: true, message: t('请输入PromQL') }]}
-              >
-                <PromqlEditor
-                  // className='promql-editor'
-                  xCluster='Default'
-                  onChange={(val) => {
-                    if (val) {
-                      form.validateFields(['prom_ql']);
-                    }
+              <Form.Item name='prom_ql' validateTrigger={['onBlur']} trigger='onChange' rules={[{ required: true, message: t('请输入PromQL') }]}>
+                <PromQLInput
+                  url='/api/n9e/prometheus'
+                  headers={{
+                    'X-Cluster': localStorage.getItem('curCluster') || 'DEFAULT',
+                    Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
                   }}
                 />
               </Form.Item>

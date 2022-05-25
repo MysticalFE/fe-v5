@@ -1,8 +1,24 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Col, Button, Row, message } from 'antd';
 const { Option } = Select;
 const { TextArea } = Input;
-import { MinusCircleOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, CaretDownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 interface Itag {
   field: any;
@@ -40,7 +56,7 @@ const TagItem: React.FC<Itag> = ({ field, remove, form }) => {
         </Col>
         <Col span={3}>
           <Form.Item style={{ marginBottom: 0 }} name={[field.name, 'func']} fieldKey={[field.name, 'func']} initialValue='=='>
-            <Select onChange={funcChange}>
+            <Select suffixIcon={<CaretDownOutlined />} onChange={funcChange}>
               <Option value='=='>==</Option>
               <Option value='=~'>=~</Option>
               <Option value='in'>in</Option>

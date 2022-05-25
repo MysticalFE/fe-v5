@@ -1,13 +1,29 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { Tag, Button, Select, Modal, message, Switch, Dropdown, Table } from 'antd';
+import { Tag, Button, Select, Modal, message, Switch, Dropdown, Table, Tabs } from 'antd';
 import { getStrategyGroupSubList, updateAlertRules } from '@/services/warning';
 import SearchInput from '@/components/BaseSearchInput';
 import { useHistory } from 'react-router-dom';
 
 import { strategyItem, strategyStatus } from '@/store/warningInterface';
 import { CommonStoreState } from '@/store/commonInterface';
-import { addOrEditStrategy, deleteStrategy } from '@/services/warning';
+import { addOrEditStrategy, deleteStrategy, getBuiltinAlerts, createBuiltinAlerts } from '@/services/warning';
 import { priorityColor } from '@/utils/constant';
 import { ColumnType } from 'antd/lib/table';
 import { pageSizeOptionsDefault } from '../const';
@@ -21,6 +37,7 @@ import EditModal from './components/editModal';
 import ColumnSelect from '@/components/ColumnSelect';
 const { Option } = Select;
 const { confirm } = Modal;
+const { TabPane } = Tabs;
 
 import { useTranslation } from 'react-i18next';
 const exportIgnoreAttrsObj = {
@@ -257,7 +274,7 @@ const PageTable: React.FC<Props> = ({ bgid }) => {
   const menu = useMemo(() => {
     return (
       <ul className='ant-dropdown-menu'>
-        <li className='ant-dropdown-menu-item' onClick={() => setModalType(ModalStatus.Import)}>
+        <li className='ant-dropdown-menu-item' onClick={() => setModalType(ModalStatus.BuiltIn)}>
           <span>{t('导入告警规则')}</span>
         </li>
         <li
@@ -350,7 +367,7 @@ const PageTable: React.FC<Props> = ({ bgid }) => {
           <SearchInput className={'searchInput'} placeholder={t('搜索名称或标签')} onSearch={setQuery} allowClear />
         </div>
         <div className='strategy-table-search-right'>
-          <Button type='primary' onClick={goToAddWarningStrategy} className='strategy-table-search-right-create'>
+          <Button type='primary' onClick={goToAddWarningStrategy} className='strategy-table-search-right-create' ghost>
             {t('新增告警规则')}
           </Button>
           <div className={'table-more-options'}>
@@ -393,7 +410,10 @@ const PageTable: React.FC<Props> = ({ bgid }) => {
         columns={columns}
       />
       <ImportAndDownloadModal
+        bgid={bgid}
         status={modalType}
+        fetchBuiltinFunc={getBuiltinAlerts}
+        submitBuiltinFunc={createBuiltinAlerts}
         onClose={() => {
           setModalType(ModalStatus.None);
         }}
@@ -401,7 +421,17 @@ const PageTable: React.FC<Props> = ({ bgid }) => {
           getAlertRules();
         }}
         onSubmit={handleImportStrategy}
-        title={t('告警规则')}
+        label='告警规则'
+        title={
+          ModalStatus.Export === modalType ? (
+            '告警规则'
+          ) : (
+            <Tabs defaultActiveKey={ModalStatus.BuiltIn} onChange={(e: ModalStatus) => setModalType(e)} className='custom-import-alert-title'>
+              <TabPane tab=' 导入内置告警规则' key={ModalStatus.BuiltIn}></TabPane>
+              <TabPane tab='导入告警规则JSON' key={ModalStatus.Import}></TabPane>
+            </Tabs>
+          )
+        }
         exportData={exportData}
       />
       {isModalVisible && <EditModal isModalVisible={isModalVisible} editModalFinish={editModalFinish} />}

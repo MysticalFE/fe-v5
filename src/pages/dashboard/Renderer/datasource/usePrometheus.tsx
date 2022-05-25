@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import * as api from '@/components/Graph/api';
@@ -21,9 +37,9 @@ interface IProps {
 
 const getSerieName = (metric: Object, expr: string) => {
   let name = metric['__name__'] || '';
-  if (_.keys(metric).length === 0) {
-    name = expr;
-  }
+  // if (_.keys(metric).length === 0) {
+  //   name = expr;
+  // }
   _.forEach(_.omit(metric, '__name__'), (value, key) => {
     name += ` ${key}: ${value}`;
   });
@@ -31,7 +47,7 @@ const getSerieName = (metric: Object, expr: string) => {
 };
 
 export default function usePrometheus(props: IProps) {
-  const { id = 0, dashboardId, time, refreshFlag, step, targets, variableConfig, inViewPort } = props;
+  const { id, dashboardId, time, refreshFlag, step, targets, variableConfig, inViewPort } = props;
   const [series, setSeries] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const cachedVariableValues = _.map(variableConfig?.var, (item) => {
@@ -44,7 +60,7 @@ export default function usePrometheus(props: IProps) {
     if (!step) _step = Math.max(Math.floor((end - start) / 250), 1);
     const _series: any[] = [];
     const promises: Promise<any>[] = [];
-    _.forEach(targets, (target, idx) => {
+    _.forEach(targets, (target) => {
       if (target.time) {
         const { start: _start, end: _end } = formatPickerDate(target.time);
         start = _start;
@@ -54,7 +70,7 @@ export default function usePrometheus(props: IProps) {
         _step = target.step;
       }
       const realExpr = variableConfig ? replaceExpressionVars(target.expr, variableConfig, variableConfig.var.length, dashboardId) : target.expr;
-      const signalKey = `${id}-${idx}`;
+      const signalKey = `${id}-${target.expr}`;
       if (realExpr) {
         promises.push(
           api

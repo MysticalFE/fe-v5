@@ -7,7 +7,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  .left-top-bg {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 600px;
+  }
+  .right-bottom-bg {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 632px;
+  }
   .banner {
+    &.integration {
+      background: none;
+      display: flex;
+      width: 900px;
+      justify-content: center;
+    }
+    flex: 1;
     background: rgb(20, 22, 49);
     width: 720px;
     height: 100%;
@@ -32,18 +51,39 @@
       }
     }
   }
-  @media screen and (max-width: 1070px) {
-    .banner {
-      display: none;
-    }
-  }
   .login-panel {
     height: 100%;
-    width: 100%;
+    // width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     .login-main {
+      &.integration {
+        z-index: 5;
+        margin-bottom: 35px;
+        .login-title {
+          text-align: center;
+          width: 80%;
+        }
+        .ant-form-item {
+          margin-bottom: 40px;
+        }
+        .ant-form-item-label > label {
+          font-size: 16px;
+        }
+        input {
+          border: none;
+          border-radius: 0px;
+          font-size: 14px;
+          border-bottom: 1px solid #999999;
+          box-shadow: none !important;
+          padding-left: 0px;
+        }
+        .ant-btn {
+          font-size: 16px;
+          background: linear-gradient(to right, #8874c0, #6c53b1);
+        }
+      }
       width: 600px;
       padding: 50px;
       .login-title {
@@ -80,6 +120,36 @@
     font-size: 14px;
     strong {
       font-weight: 500;
+    }
+  }
+  @media screen and (max-width: 1070px) {
+    .banner {
+      display: none;
+      &.integration {
+        display: none;
+      }
+    }
+  }
+  @media screen and (max-width: 600px) {
+    .left-top-bg {
+      width: 100%;
+    }
+    .right-bottom-bg {
+      width: 100%;
+    }
+    .login-panel {
+      width: 100%;
+    }
+    .login-main {
+      width: 100%;
+      &.integration {
+        .login-title {
+          width: 100%;
+        }
+        .ant-form-vertical {
+          width: 100%;
+        }
+      }
     }
   }
 }

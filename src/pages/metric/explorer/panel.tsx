@@ -1,5 +1,21 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import { AreaChartOutlined, CloseCircleOutlined, LineChartOutlined } from '@ant-design/icons';
-import { Tabs, List, DatePicker, Radio, Alert } from 'antd';
+import { Tabs, List, DatePicker, Radio, Alert, Space } from 'antd';
 import moment, { Moment } from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -350,21 +366,23 @@ const Panel: React.FC<PanelProps> = ({ metrics, defaultPromQL, removePanel }) =>
           {/* 操作栏 */}
           <div className='graph-operate-box'>
             <div className='left'>
-              <DateRangePicker placement='bottomRight' value={optionsRecord.range} onChange={handleGraphDateChange} />
-              <Resolution onChange={(v: number) => setOptions({ resolution: v })} initialValue={optionsRecord.resolution} />
-              <Radio.Group
-                options={[
-                  { label: <LineChartOutlined />, value: ChartType.Line },
-                  { label: <AreaChartOutlined />, value: ChartType.StackArea },
-                ]}
-                onChange={(e) => {
-                  e.preventDefault();
-                  setChartType(e.target.value);
-                }}
-                value={chartType}
-                optionType='button'
-                buttonStyle='solid'
-              />
+              <Space>
+                <DateRangePicker placement='bottomRight' value={optionsRecord.range} onChange={handleGraphDateChange} />
+                <Resolution onChange={(v: number) => setOptions({ resolution: v })} initialValue={optionsRecord.resolution} />
+                <Radio.Group
+                  options={[
+                    { label: <LineChartOutlined />, value: ChartType.Line },
+                    { label: <AreaChartOutlined />, value: ChartType.StackArea },
+                  ]}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setChartType(e.target.value);
+                  }}
+                  value={chartType}
+                  optionType='button'
+                  buttonStyle='solid'
+                />
+              </Space>
             </div>
           </div>
           {/* 图 */}

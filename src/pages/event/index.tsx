@@ -1,6 +1,22 @@
+/*
+ * Copyright 2022 Nightingale Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PageLayout from '@/components/pageLayout';
-import { AlertOutlined, ExclamationCircleOutlined, SearchOutlined, DownOutlined } from '@ant-design/icons';
+import { AlertOutlined, ExclamationCircleOutlined, SearchOutlined, DownOutlined, ReloadOutlined, AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import LeftTree from '@/components/LeftTree';
 import DataTable from '@/components/Dantd/components/data-table';
@@ -20,7 +36,7 @@ import { useInterval } from 'ahooks';
 const { confirm } = Modal;
 import ColumnSelect from '@/components/ColumnSelect';
 import RefreshIcon from '@/components/RefreshIcon';
-
+import Card from './card';
 export const SeverityColor = ['red', 'orange', 'yellow', 'green'];
 
 export function deleteAlertEventsModal(busiId, ids: number[], onSuccess = () => {}) {
@@ -31,6 +47,7 @@ export function deleteAlertEventsModal(busiId, ids: number[], onSuccess = () => 
     okText: '确认删除',
     maskClosable: true,
     okButtonProps: { danger: true },
+    zIndex: 1001,
     onOk() {
       return deleteAlertEvents(busiId, ids).then((res) => {
         message.success('删除成功');
@@ -44,6 +61,7 @@ export function deleteAlertEventsModal(busiId, ids: number[], onSuccess = () => 
 const Event: React.FC = () => {
   const history = useHistory();
   const { t } = useTranslation();
+  const [view, setView] = useState<'card' | 'list'>('card');
   const dispatch = useDispatch();
   const [severity, setSeverity] = useState<number>();
   const [curClusterItems, setCurClusterItems] = useState<string[]>([]);
@@ -66,6 +84,9 @@ const Event: React.FC = () => {
   const tableRef = useRef({
     handleReload() {},
   });
+  const cardRef = useRef({
+    reloadCard() {},
+  });
   const isAddTagToQueryInput = useRef(false);
   const [curBusiId, setCurBusiId] = useState<number>(-1);
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
@@ -73,7 +94,7 @@ const Event: React.FC = () => {
 
   useInterval(
     () => {
-      tableRef.current.handleReload();
+      view === 'list' ? tableRef.current.handleReload() : cardRef.current.reloadCard();
     },
     interval > 0 ? interval * 1000 : undefined,
   );
@@ -138,6 +159,7 @@ const Event: React.FC = () => {
               type='link'
               onClick={() => {
                 history.push('/alert-mutes/add', {
+                  cluster: record.cluster,
                   tags: record.tags.map((tag) => {
                     const [key, value] = tag.split('=');
                     return {
@@ -158,7 +180,7 @@ const Event: React.FC = () => {
               onClick={() =>
                 deleteAlertEventsModal(curBusiId, [record.id], () => {
                   setSelectedRowKeys(selectedRowKeys.filter((key) => key !== record.id));
-                  tableRef.current.handleReload();
+                  view === 'list' && tableRef.current.handleReload();
                 })
               }
             >
@@ -201,13 +223,11 @@ const Event: React.FC = () => {
       </Menu>
     );
     return (
-      <div className='table-operate-box'>
+      <div className='table-operate-box' style={{ background: '#fff' }}>
         <div className='left'>
-          <Dropdown overlay={menu}>
-            <Button className='interval-btn' icon={<DownOutlined />}>
-              {interval > 0 ? interval + 's' : 'off'}
-            </Button>
-          </Dropdown>
+          <Button icon={<AppstoreOutlined />} onClick={() => setView('card')} />
+          <Button icon={<UnorderedListOutlined />} onClick={() => setView('list')} style={{ marginLeft: 8, marginRight: 8 }} />
+
           <DateRangePicker
             showRight={false}
             leftList={DateRangeItems}
@@ -229,22 +249,36 @@ const Event: React.FC = () => {
             placeholder='模糊搜索规则和标签(多个关键词请用空格分隔)'
             value={queryContent}
             onChange={(e) => saveData('queryContent', e.target.value)}
-            onPressEnter={(e) => tableRef.current.handleReload()}
+            onPressEnter={(e) => view === 'list' && tableRef.current.handleReload()}
           />
         </div>
         <div className='right'>
-          <Button
-            danger
-            disabled={selectedRowKeys.length === 0}
-            onClick={() =>
-              deleteAlertEventsModal(curBusiId, selectedRowKeys, () => {
-                setSelectedRowKeys([]);
-                tableRef.current.handleReload();
-              })
-            }
-          >
-            批量删除
-          </Button>
+          {view === 'list' && (
+            <Button
+              danger
+              style={{ marginRight: 8 }}
+              disabled={selectedRowKeys.length === 0}
+              onClick={() =>
+                deleteAlertEventsModal(curBusiId, selectedRowKeys, () => {
+                  setSelectedRowKeys([]);
+                  view === 'list' && tableRef.current.handleReload();
+                })
+              }
+            >
+              批量删除
+            </Button>
+          )}
+          <RefreshIcon
+            onClick={() => {
+              view === 'list' && tableRef.current.handleReload();
+              view === 'card' && cardRef.current.reloadCard()
+            }}
+          />
+          <Dropdown overlay={menu}>
+            <Button className='interval-btn' icon={<DownOutlined />}>
+              {interval > 0 ? interval + 's' : 'off'}
+            </Button>
+          </Dropdown>
         </div>
       </div>
     );
@@ -252,61 +286,78 @@ const Event: React.FC = () => {
 
   useEffect(() => {
     if (isAddTagToQueryInput.current) {
-      tableRef.current.handleReload();
+      view === 'list' && tableRef.current.handleReload();
       isAddTagToQueryInput.current = false;
     }
   }, [queryContent]);
 
   useEffect(() => {
-    tableRef.current.handleReload();
-  }, [curClusterItems, severity, hourRange, curBusiId]);
+    view === 'list' && tableRef.current.handleReload();
+  }, [curClusterItems, severity, hourRange, curBusiId, view]);
 
   return (
     <PageLayout icon={<AlertOutlined />} title={t('活跃告警')} hideCluster>
       <div className='event-content cur-events'>
-        <div className='table-area'>
-          <DataTable
-            ref={tableRef}
-            antProps={{
-              rowKey: 'id',
-              rowClassName: (record: { severity: number }, index) => {
-                return SeverityColor[record.severity - 1];
-              },
-              rowSelection: {
-                selectedRowKeys: selectedRowKeys,
-                onChange(selectedRowKeys, selectedRows) {
-                  setSelectedRowKeys(selectedRowKeys.map((key) => Number(key)));
+        <div className='table-area' style={{ padding: view === 'card' ? 0 : undefined }}>
+          {view === 'card' ? (
+            <div style={{ width: '100%', height: '100%', background: '#eee' }}>
+              <Card
+                ref={cardRef}
+                header={renderLeftHeader()}
+                filter={Object.assign(
+                  { hours: hourRange.unit !== 'hours' ? hourRange.num * 24 : hourRange.num },
+                  curClusterItems.length ? { clusters: curClusterItems.join(',') } : {},
+                  severity ? { severity } : {},
+                  queryContent ? { query: queryContent } : {},
+                  { bgid: curBusiId },
+                )}
+              />
+            </div>
+          ) : (
+            <DataTable
+              ref={tableRef}
+              antProps={{
+                rowKey: 'id',
+                rowClassName: (record: { severity: number }, index) => {
+                  return SeverityColor[record.severity - 1] + '-left-border';
                 },
-              },
-              // scroll: { x: 'max-content' },
-            }}
-            url={`/api/n9e/alert-cur-events/list`}
-            customQueryCallback={(data) =>
-              Object.assign(
+                rowSelection: {
+                  selectedRowKeys: selectedRowKeys,
+                  onChange(selectedRowKeys, selectedRows) {
+                    setSelectedRowKeys(selectedRowKeys.map((key) => Number(key)));
+                  },
+                },
+                // scroll: { x: 'max-content' },
+              }}
+              url={`/api/n9e/alert-cur-events/list`}
+              customQueryCallback={(data) =>
+                Object.assign(
+                  data,
+                  { hours: hourRange.unit !== 'hours' ? hourRange.num * 24 : hourRange.num },
+                  curClusterItems.length ? { clusters: curClusterItems.join(',') } : {},
+                  severity ? { severity } : {},
+                  queryContent ? { query: queryContent } : {},
+                  { bgid: curBusiId },
+                )
+              }
+              pageParams={{
+                curPageName: 'p',
+                pageSizeName: 'limit',
+                pageSize: 30,
+                pageSizeOptions: ['30', '100', '200', '500'],
+              }}
+              apiCallback={({ dat: { list: data, total } }) => ({
                 data,
-                { hours: hourRange.unit !== 'hours' ? hourRange.num * 24 : hourRange.num },
-                curClusterItems.length ? { clusters: curClusterItems.join(',') } : {},
-                severity ? { severity } : {},
-                queryContent ? { query: queryContent } : {},
-                { bgid: curBusiId },
-              )
-            }
-            pageParams={{
-              curPageName: 'p',
-              pageSizeName: 'limit',
-              pageSize: 30,
-              pageSizeOptions: ['30', '100', '200', '500'],
-            }}
-            apiCallback={({ dat: { list: data, total } }) => ({
-              data,
-              total,
-            })}
-            columns={columns}
-            reloadBtnType='btn'
-            reloadBtnPos='left'
-            filterType='flex'
-            leftHeader={renderLeftHeader()}
-          />
+                total,
+              })}
+              columns={columns}
+              reloadBtnType='btn'
+              reloadBtnPos='right'
+              showReloadBtn
+              filterType='flex'
+              leftHeader={renderLeftHeader()}
+            />
+          )}
         </div>
       </div>
     </PageLayout>
