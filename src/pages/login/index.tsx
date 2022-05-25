@@ -46,7 +46,7 @@ export default function Login() {
       </div>
       <div className='login-panel'>
         <div className='login-main'>
-          <div className='login-title'>Nightingale</div>
+          <div className='login-title'>智能运维平台</div>
           <Form form={form} layout='vertical' requiredMark={true}>
             <Form.Item
               required
@@ -78,7 +78,12 @@ export default function Login() {
                 {t('登录')}
               </Button>
             </Form.Item>
-            <div className='login-other'>
+            <Form.Item>
+              <Button type='primary' onClick={() => {message.warning('功能开发ing')}}>
+                其他登录方式
+              </Button>
+            </Form.Item>
+            {/* <div className='login-other'>
               <strong>其他登录方式：</strong>
               <a
                 onClick={() => {
@@ -93,7 +98,7 @@ export default function Login() {
               >
                 OIDC
               </a>
-            </div>
+            </div> */}
           </Form>
         </div>
       </div>

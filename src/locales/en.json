@@ -8,7 +8,7 @@
     "multiple": "Alert Rules"
   },
   "personalInfo": "Profile",
-  "n9e": "DiDi Nightingale",
+  "n9e": "智能运维平台",
   "输入有误": "Incorrect input",
   "修改密码成功": "Changed the password successfully",
   "旧密码": "Old password",
@@ -176,7 +176,6 @@
   "用户名、邮箱或手机": "User name, email or mobile phone",
   "创建": "Create",
   "创建并关闭": "Create and close",
-
   "创建用户": "Create User",
   "团队管理": "Team Management",
   "搜索团队名称": "Team name",
@@ -398,7 +397,6 @@
   "请输入百分比": "Enter percentages",
   "新建策略分组": "New rule group",
   "新建子节点": "New child node",
-
   "编辑策略组": "Edit rule Group",
   "策略组名称": "Name",
   "策略组名称必填": "Group name required",
@@ -518,7 +516,6 @@
   "天": " day",
   "月": " month",
   "季度": " quarter",
-
   "tpl.create": "Create",
   "tpl.tag.bind": "Bind tags",
   "tpl.tag.unbind": "Unbind tags",
@@ -549,7 +546,6 @@
   "tpl.args.help": "Parameters attached to the script, separated by double commas, such as arg1,,arg2,,arg3",
   "tpl.modify": "Modify the template",
   "tpl.create.task": "Create a new task",
-
   "task.create": "Create task",
   "task.title": "Title",
   "task.done": "Done",
@@ -573,21 +569,17 @@
   "task.host.list": "Host list",
   "task.clone.new": "Clone a new task",
   "task.temporary.create": "Create temporary task",
-
   "groups.instGroups": "Instant groups",
   "groups.crontabGroups": "Crontab groups",
-
   "perms.hosts": "Hosts",
   "perms.host": "Host",
   "perms.team": "Team",
   "perms.account": "Account",
-
   "last.7.days": "Last 7 days",
   "last.15.days": "Last 15 days",
   "last.30.days": "Last 30 days",
   "last.60.days": "Last 60 days",
   "last.90.days": "Last 90 days",
-
   "table.nodata": "No data",
   "table.create": "Create",
   "table.operations": "Operations",
@@ -605,13 +597,11 @@
   "table.creator": "Creator",
   "table.lastupdated": "Last updated",
   "table.note": "Note",
-
   "form.submit": "Submit",
   "form.save": "Save",
   "form.submit.and.save": "Save",
   "form.login": "Login",
   "form.goback": "Go back",
-
   "msg.submit.success": "Successfully submited",
   "msg.modify.success": "Successfully modified",
   "msg.create.success": "Successfully created",

@@ -31,6 +31,8 @@ function renderChunks(deps: Record<string, string>) {
   return chunks;
 }
 
+const serverIp = 'http://192.168.103.33:19000/';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -71,24 +73,24 @@ export default defineConfig({
       //   changeOrigin: true,
       // },
       '/api/n9e': {
-        target: 'http://10.206.0.11:8765/',
+        target: serverIp,
         // target: 'http://10.206.0.16:18000/',
         changeOrigin: true,
       },
       '/filters': {
-        target: 'http://10.206.0.11:8765/',
+        target: serverIp,
         changeOrigin: true,
       },
       '/integrations': {
-        target: 'http://10.206.0.11:8765/',
+        target: serverIp,
         changeOrigin: true,
       },
       '/alerts': {
-        target: 'http://10.206.0.11:8765/',
+        target: serverIp,
         changeOrigin: true,
       },
       '/changes': {
-        target: 'http://10.206.0.11:8765/',
+        target: serverIp,
         changeOrigin: true,
       },
       '/dimension/api/v1': {
